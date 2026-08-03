@@ -12,10 +12,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from langchain_core.language_models import BaseChatModel
 from pydantic import BaseModel
 
-from argus.agents.base import StructuredAgent
+from argus.agents.base import ChatModelLike, StructuredAgent
 from argus.models.context import RetrievedContext
 from argus.models.diff import PullRequestDiff
 from argus.models.review import (
@@ -26,6 +25,7 @@ from argus.models.review import (
     SecurityReview,
     TestingReview,
 )
+from argus.prompts.rendering import render_review_prompt
 from argus.prompts.reviewers import (
     ARCHITECTURE_SYSTEM_PROMPT,
     PERFORMANCE_SYSTEM_PROMPT,
@@ -33,7 +33,6 @@ from argus.prompts.reviewers import (
     SECURITY_SYSTEM_PROMPT,
     TESTING_SYSTEM_PROMPT,
 )
-from argus.prompts.rendering import render_review_prompt
 
 
 @dataclass(frozen=True)
@@ -54,7 +53,7 @@ REVIEWER_SPECS: tuple[ReviewerSpec, ...] = (
 )
 
 
-def build_reviewer(spec: ReviewerSpec, chat_model: BaseChatModel) -> StructuredAgent[BaseModel]:
+def build_reviewer(spec: ReviewerSpec, chat_model: ChatModelLike) -> StructuredAgent[BaseModel]:
     return StructuredAgent(spec.key, chat_model, spec.schema, spec.system_prompt)
 
 

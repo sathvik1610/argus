@@ -4,9 +4,7 @@ risk verdict, and decides whether the context-expansion loop should run again.
 
 from __future__ import annotations
 
-from langchain_core.language_models import BaseChatModel
-
-from argus.agents.base import StructuredAgent
+from argus.agents.base import ChatModelLike, StructuredAgent
 from argus.models.review import (
     ArchitectureReview,
     CodeQualityReview,
@@ -18,7 +16,7 @@ from argus.models.review import (
 from argus.prompts.planning import RISK_SYSTEM_PROMPT
 
 
-def build_risk_agent(chat_model: BaseChatModel) -> StructuredAgent[RiskAssessment]:
+def build_risk_agent(chat_model: ChatModelLike) -> StructuredAgent[RiskAssessment]:
     return StructuredAgent("risk", chat_model, RiskAssessment, RISK_SYSTEM_PROMPT)
 
 

@@ -19,10 +19,13 @@ forever.
 
 from __future__ import annotations
 
+from typing import Any
+
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
+from argus.agents.base import ChatModelLike
 from argus.agents.consensus import build_consensus_agent
 from argus.agents.planner import build_planner
 from argus.agents.reviewers import REVIEWER_SPECS, build_reviewer
@@ -46,8 +49,8 @@ REVIEWER_NODE_NAMES = tuple(spec.key for spec in REVIEWER_SPECS)
 
 
 def build_review_graph(
-    settings: Settings, chat_model: object | None = None, embeddings: object | None = None
-) -> CompiledStateGraph:
+    settings: Settings, chat_model: ChatModelLike | None = None, embeddings: object | None = None
+) -> CompiledStateGraph[ReviewState]:
     """Construct and compile the review graph for the given configuration.
 
     ``chat_model``/``embeddings`` overrides exist so tests (and anything else
@@ -104,7 +107,7 @@ class _TopologyOnlyChatModel:
     diagram with no LLM provider or API key configured at all.
     """
 
-    def with_structured_output(self, schema: type) -> object:
+    def with_structured_output(self, schema: type) -> Any:
         def _unsupported(_messages: object) -> object:
             raise RuntimeError(
                 "This graph was built for topology visualization only and cannot be invoked."
@@ -113,6 +116,6 @@ class _TopologyOnlyChatModel:
         return RunnableLambda(_unsupported)
 
 
-def build_graph_topology(settings: Settings | None = None) -> CompiledStateGraph:
+def build_graph_topology(settings: Settings | None = None) -> CompiledStateGraph[ReviewState]:
     """Build the review graph for visualization only — no provider required."""
     return build_review_graph(settings or Settings(), chat_model=_TopologyOnlyChatModel())

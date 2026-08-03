@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-from langchain_core.language_models import BaseChatModel
-
-from argus.agents.base import StructuredAgent
+from argus.agents.base import ChatModelLike, StructuredAgent
 from argus.models.diff import PullRequestDiff
 from argus.models.review import ReviewStrategy
 from argus.prompts.planning import PLANNER_SYSTEM_PROMPT
 from argus.prompts.rendering import render_diff
 
 
-def build_planner(chat_model: BaseChatModel) -> StructuredAgent[ReviewStrategy]:
+def build_planner(chat_model: ChatModelLike) -> StructuredAgent[ReviewStrategy]:
     return StructuredAgent("planner", chat_model, ReviewStrategy, PLANNER_SYSTEM_PROMPT)
 
 

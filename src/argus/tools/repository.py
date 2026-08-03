@@ -44,7 +44,7 @@ class RepositoryLoader:
             raise RepositoryError(f"path does not exist: {self.repo_path}") from exc
 
     @classmethod
-    def clone(cls, url: str, destination: str | Path, *, depth: int | None = None) -> "RepositoryLoader":
+    def clone(cls, url: str, destination: str | Path, *, depth: int | None = None) -> RepositoryLoader:
         """Shallow-clone a remote repository into ``destination`` and load it."""
         destination = Path(destination)
         try:
@@ -64,13 +64,21 @@ class RepositoryLoader:
         try:
             commit = self._repo.commit(ref)
             blob = commit.tree / path
-            return blob.data_stream.read().decode("utf-8", errors="replace")
+            content: str = blob.data_stream.read().decode("utf-8", errors="replace")
+            return content
         except (KeyError, git.BadName):
             return None
 
     def list_files(self, ref: str = "HEAD") -> list[str]:
         commit = self._repo.commit(ref)
-        return [item.path for item in commit.tree.traverse() if item.type == "blob"]
+        # GitPython types `traverse()` as a union of Tree/Blob/Submodule (and,
+        # for compatibility mode, tuples); filtering on `.type == "blob"`
+        # guarantees an actual Blob at runtime, which mypy can't narrow to here.
+        return [
+            str(item.path)  # type: ignore[union-attr]
+            for item in commit.tree.traverse()
+            if getattr(item, "type", None) == "blob"
+        ]
 
     def diff(self, base_ref: str, head_ref: str = "HEAD") -> PullRequestDiff:
         """Compute the structured diff between two refs."""
@@ -110,7 +118,10 @@ class RepositoryLoader:
                 language=detect_language(path),
             )
 
-        patch_text = git_diff.diff.decode("utf-8", errors="replace")
+        raw_diff = git_diff.diff
+        patch_text = (
+            raw_diff.decode("utf-8", errors="replace") if isinstance(raw_diff, bytes) else raw_diff
+        )
         hunks = _parse_hunks(patch_text)
         return FileDiff(
             path=path,

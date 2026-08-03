@@ -4,9 +4,7 @@ the final, human-facing report.
 
 from __future__ import annotations
 
-from langchain_core.language_models import BaseChatModel
-
-from argus.agents.base import StructuredAgent
+from argus.agents.base import ChatModelLike, StructuredAgent
 from argus.models.review import (
     ArchitectureReview,
     CodeQualityReview,
@@ -19,7 +17,7 @@ from argus.models.review import (
 from argus.prompts.consensus import CONSENSUS_SYSTEM_PROMPT
 
 
-def build_consensus_agent(chat_model: BaseChatModel) -> StructuredAgent[FinalReview]:
+def build_consensus_agent(chat_model: ChatModelLike) -> StructuredAgent[FinalReview]:
     return StructuredAgent("consensus", chat_model, FinalReview, CONSENSUS_SYSTEM_PROMPT)
 
 

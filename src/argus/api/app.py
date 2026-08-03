@@ -87,7 +87,7 @@ def review(request: ReviewRequest) -> ReviewResponse:
     except RepositoryError as exc:
         _metrics.record_failure()
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:  # noqa: BLE001 - surfaced to the client as a 500
+    except Exception as exc:
         _metrics.record_failure()
         logger.error("review_failed", error=str(exc))
         raise HTTPException(status_code=500, detail="Review failed; see server logs.") from exc

@@ -67,7 +67,7 @@ def chunk_file(path: str, source: str, language: str | None) -> list[CodeChunk]:
         return [_whole_file_chunk(path, source, language)]
 
     try:
-        parser = get_parser(language)  # type: ignore[arg-type]
+        parser = get_parser(language)
     except LookupError:
         return [_whole_file_chunk(path, source, language)]
 

@@ -67,7 +67,7 @@ class RepositoryIndex:
         self,
         settings: Settings,
         repo_path: str | Path,
-        embeddings: "Embeddings | None" = None,
+        embeddings: Embeddings | None = None,
     ) -> None:
         from langchain_chroma import Chroma
 
@@ -94,12 +94,15 @@ class RepositoryIndex:
         self, query: str, *, k: int = 8, file_paths: list[str] | None = None
     ) -> list[CodeChunk]:
         """Semantic similarity search, optionally restricted to a set of files."""
+        # Chroma's `where` filter supports operators like `$in` at runtime;
+        # langchain-chroma's stub narrows `filter` to dict[str, str], which
+        # doesn't reflect that.
         where = {"file_path": {"$in": file_paths}} if file_paths else None
-        results = self._store.similarity_search(query, k=k, filter=where)
+        results = self._store.similarity_search(query, k=k, filter=where)  # type: ignore[arg-type]
         return [_document_to_chunk(d) for d in results]
 
     def chunk_count(self) -> int:
         # Chroma's public API doesn't expose collection size directly; the
         # underlying client does. Acceptable coupling to a private attribute
         # given the langchain-chroma wrapper offers no stable equivalent.
-        return self._store._collection.count()  # type: ignore[attr-defined]
+        return self._store._collection.count()

@@ -37,8 +37,10 @@ def rank_files(
     if remaining_budget == 0 or graph.number_of_nodes() == 0:
         return ranked[:limit]
 
-    personalization = {node: (1.0 if node in changed_set else 0.0) for node in graph.nodes}
-    if not any(personalization.values()):
+    personalization: dict[str, float] | None = {
+        node: (1.0 if node in changed_set else 0.0) for node in graph.nodes
+    }
+    if personalization is not None and not any(personalization.values()):
         # No changed file is a known graph node (e.g. brand-new file with no
         # resolvable imports yet) — fall back to plain centrality.
         personalization = None

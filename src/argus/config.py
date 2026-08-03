@@ -41,6 +41,12 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        # The provider API key fields declare an unprefixed alias (GOOGLE_API_KEY,
+        # not ARGUS_GOOGLE_API_KEY) so they load from each provider's own
+        # standard env var. `populate_by_name` additionally allows constructing
+        # `Settings(google_api_key=...)` by field name, which callers (and
+        # tests) do throughout this codebase.
+        populate_by_name=True,
     )
 
     llm_provider: LLMProvider = LLMProvider.GOOGLE

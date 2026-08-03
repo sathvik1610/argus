@@ -55,9 +55,9 @@ def render_markdown(review: FinalReview) -> str:
 
     lines.append("## Performance\n")
     lines.append(review.performance.summary + "\n")
-    for issue in review.performance.bottlenecks:
-        complexity = f" ({issue.complexity_estimate})" if issue.complexity_estimate else ""
-        lines.append(f"- **{issue.title}**{complexity} — `{issue.file_path}`\n  - {issue.description}")
+    for bottleneck in review.performance.bottlenecks:
+        complexity = f" ({bottleneck.complexity_estimate})" if bottleneck.complexity_estimate else ""
+        lines.append(f"- **{bottleneck.title}**{complexity} — `{bottleneck.file_path}`\n  - {bottleneck.description}")
     lines.append("")
 
     lines.append("## Architecture\n")
@@ -72,8 +72,11 @@ def render_markdown(review: FinalReview) -> str:
     lines.append("## Code quality\n")
     lines.append(f"Maintainability: {review.quality.maintainability_score:.1f}/10\n")
     lines.append(review.quality.summary + "\n")
-    for issue in review.quality.issues:
-        lines.append(f"- {_SEVERITY_EMOJI[issue.severity]} [{issue.category}] **{issue.title}** — `{issue.file_path}`")
+    for quality_issue in review.quality.issues:
+        lines.append(
+            f"- {_SEVERITY_EMOJI[quality_issue.severity]} [{quality_issue.category}] "
+            f"**{quality_issue.title}** — `{quality_issue.file_path}`"
+        )
     lines.append("")
 
     lines.append("## Testing\n")

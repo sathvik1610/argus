@@ -21,11 +21,15 @@ class UnsupportedProviderError(ValueError):
     """Raised when a provider has no registered factory."""
 
 
-def build_chat_model(settings: Settings) -> "BaseChatModel":
+def build_chat_model(settings: Settings) -> BaseChatModel:
     """Construct the configured chat model, ready for structured output binding."""
     provider = settings.llm_provider
     model = settings.resolved_model()
 
+    # The api_key/google_api_key parameters below are typed by their packages
+    # as SecretStr (Anthropic) or a narrower Union (OpenAI); at runtime every
+    # one of these classes accepts a plain `str | None` and coerces it, so the
+    # mismatch is a stub inaccuracy rather than a real type error.
     if provider is LLMProvider.GOOGLE:
         from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -42,7 +46,7 @@ def build_chat_model(settings: Settings) -> "BaseChatModel":
             model=model,
             temperature=settings.llm_temperature,
             max_retries=settings.llm_max_retries,
-            api_key=settings.openai_api_key,
+            api_key=settings.openai_api_key,  # type: ignore[arg-type]
         )
     if provider is LLMProvider.ANTHROPIC:
         from langchain_anthropic import ChatAnthropic
@@ -51,7 +55,7 @@ def build_chat_model(settings: Settings) -> "BaseChatModel":
             model_name=model,
             temperature=settings.llm_temperature,
             max_retries=settings.llm_max_retries,
-            api_key=settings.anthropic_api_key,
+            api_key=settings.anthropic_api_key,  # type: ignore[arg-type]
             timeout=120,
             stop=None,
         )
@@ -67,7 +71,7 @@ def build_chat_model(settings: Settings) -> "BaseChatModel":
     raise UnsupportedProviderError(f"No chat model factory registered for provider={provider!r}")
 
 
-def build_embeddings(settings: Settings) -> "Embeddings":
+def build_embeddings(settings: Settings) -> Embeddings:
     """Construct the configured embedding model for repository indexing."""
     provider = settings.resolved_embedding_provider()
     model = settings.embedding_model
@@ -77,12 +81,15 @@ def build_embeddings(settings: Settings) -> "Embeddings":
 
         return GoogleGenerativeAIEmbeddings(
             model=model or "models/text-embedding-004",
-            google_api_key=settings.google_api_key,
+            google_api_key=settings.google_api_key,  # type: ignore[call-arg]
         )
     if provider is LLMProvider.OPENAI:
         from langchain_openai import OpenAIEmbeddings
 
-        return OpenAIEmbeddings(model=model or "text-embedding-3-small", api_key=settings.openai_api_key)
+        return OpenAIEmbeddings(
+            model=model or "text-embedding-3-small",
+            api_key=settings.openai_api_key,  # type: ignore[arg-type]
+        )
     if provider is LLMProvider.OLLAMA:
         from langchain_ollama import OllamaEmbeddings
 
@@ -96,7 +103,7 @@ def build_embeddings(settings: Settings) -> "Embeddings":
 
         return GoogleGenerativeAIEmbeddings(
             model=model or "models/text-embedding-004",
-            google_api_key=settings.google_api_key,
+            google_api_key=settings.google_api_key,  # type: ignore[call-arg]
         )
 
     raise UnsupportedProviderError(f"No embeddings factory registered for provider={provider!r}")
