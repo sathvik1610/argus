@@ -11,6 +11,9 @@ Built on [LangGraph](https://github.com/langchain-ai/langgraph) for
 orchestration and [LangChain](https://github.com/langchain-ai/langchain) for
 LLM/embedding integration.
 
+> New here? [`docs/HowItWorks.md`](docs/HowItWorks.md) explains what this does
+> in plain English, no technical background needed.
+>
 > See [`docs/Architecture.md`](docs/Architecture.md) for the full design
 > rationale — why the graph is shaped the way it is, why LangGraph vs. a
 > plain chain, and the retrieval strategy that keeps this practical on repos
