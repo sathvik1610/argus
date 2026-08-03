@@ -27,6 +27,7 @@ dependencies = [
     "uvicorn[standard]>=0.31.0",
     "rich>=13.9.0",
     "networkx>=3.3",
+    "scipy>=1.14.0",
     "tenacity>=9.0.0",
     "structlog>=24.4.0",
 ]
