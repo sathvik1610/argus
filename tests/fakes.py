@@ -33,10 +33,14 @@ class FakeStructuredChatModel:
         def _respond(_messages: Any) -> BaseModel:
             value = self._responses.get(schema)
             if value is None:
-                raise AssertionError(f"FakeStructuredChatModel has no response registered for {schema}")
+                raise AssertionError(
+                    f"FakeStructuredChatModel has no response registered for {schema}"
+                )
             if isinstance(value, list):
                 if not value:
-                    raise AssertionError(f"FakeStructuredChatModel exhausted responses for {schema}")
+                    raise AssertionError(
+                        f"FakeStructuredChatModel exhausted responses for {schema}"
+                    )
                 return value.pop(0)
             return value
 

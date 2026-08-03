@@ -31,7 +31,9 @@ def test_build_chat_model_ollama_needs_no_api_key() -> None:
 
 
 def test_resolved_model_override() -> None:
-    settings = Settings(llm_provider=LLMProvider.GOOGLE, llm_model="gemini-2.5-pro", google_api_key="x")
+    settings = Settings(
+        llm_provider=LLMProvider.GOOGLE, llm_model="gemini-2.5-pro", google_api_key="x"
+    )
     model = build_chat_model(settings)
     assert model.model == "gemini-2.5-pro"
 
@@ -50,7 +52,9 @@ def test_build_embeddings_anthropic_falls_back_to_google() -> None:
 
 
 def test_unsupported_provider_raises() -> None:
-    settings = Settings(llm_provider=LLMProvider.GOOGLE, llm_model="explicit-model", google_api_key="x")
+    settings = Settings(
+        llm_provider=LLMProvider.GOOGLE, llm_model="explicit-model", google_api_key="x"
+    )
     # Force an unregistered provider value past validation to exercise the
     # factory's fallthrough branch (bypassing resolved_model()'s default-model
     # lookup by supplying an explicit llm_model).

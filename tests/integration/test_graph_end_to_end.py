@@ -23,14 +23,21 @@ from tests.fakes import FakeStructuredChatModel
 def _fake_reviews() -> dict:
     return {
         ReviewStrategy: ReviewStrategy(
-            summary="s", estimated_review_depth="standard", focus_areas=["performance"], rationale="r"
+            summary="s",
+            estimated_review_depth="standard",
+            focus_areas=["performance"],
+            rationale="r",
         ),
-        SecurityReview: SecurityReview(summary="clean", overall_severity=Severity.LOW, confidence=0.9),
+        SecurityReview: SecurityReview(
+            summary="clean", overall_severity=Severity.LOW, confidence=0.9
+        ),
         PerformanceReview: PerformanceReview(summary="nested loop found", confidence=0.8),
         ArchitectureReview: ArchitectureReview(
             summary="fine", coupling_notes="low", cohesion_notes="ok", confidence=0.8
         ),
-        CodeQualityReview: CodeQualityReview(summary="ok", maintainability_score=8.0, confidence=0.8),
+        CodeQualityReview: CodeQualityReview(
+            summary="ok", maintainability_score=8.0, confidence=0.8
+        ),
         TestingReview: TestingReview(summary="needs tests", confidence=0.7),
     }
 
@@ -87,7 +94,12 @@ def test_context_expansion_loop_runs_when_risk_agent_requests_more(
             needs_more_context=True,
             follow_up_queries=["definition of helper"],
         ),
-        RiskAssessment(overall_risk=Severity.LOW, risk_score=15.0, rationale="resolved", needs_more_context=False),
+        RiskAssessment(
+            overall_risk=Severity.LOW,
+            risk_score=15.0,
+            rationale="resolved",
+            needs_more_context=False,
+        ),
     ]
     responses[FinalReview] = FinalReview(
         summary="looks good after digging deeper",
@@ -102,7 +114,13 @@ def test_context_expansion_loop_runs_when_risk_agent_requests_more(
     )
     # The reviewer schemas get invoked twice (fan-out ran twice) — register a
     # duplicate for each so the second pass doesn't raise "exhausted".
-    for schema in (SecurityReview, PerformanceReview, ArchitectureReview, CodeQualityReview, TestingReview):
+    for schema in (
+        SecurityReview,
+        PerformanceReview,
+        ArchitectureReview,
+        CodeQualityReview,
+        TestingReview,
+    ):
         responses[schema] = [responses[schema], responses[schema]]
 
     model = FakeStructuredChatModel(responses)

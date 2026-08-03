@@ -50,9 +50,7 @@ def rank_files(
     except nx.PowerIterationFailedConvergence:
         scores = dict.fromkeys(graph.nodes, 0.0)
 
-    candidates = [
-        (path, score) for path, score in scores.items() if path not in changed_set
-    ]
+    candidates = [(path, score) for path, score in scores.items() if path not in changed_set]
     candidates.sort(key=lambda item: item[1], reverse=True)
 
     for path, score in candidates[:remaining_budget]:

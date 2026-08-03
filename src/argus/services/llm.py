@@ -93,7 +93,9 @@ def build_embeddings(settings: Settings) -> Embeddings:
     if provider is LLMProvider.OLLAMA:
         from langchain_ollama import OllamaEmbeddings
 
-        return OllamaEmbeddings(model=model or "nomic-embed-text", base_url=settings.ollama_base_url)
+        return OllamaEmbeddings(
+            model=model or "nomic-embed-text", base_url=settings.ollama_base_url
+        )
     if provider is LLMProvider.ANTHROPIC:
         # Anthropic does not offer an embeddings API; fall back to a local
         # sentence-transformer style model would add a heavy dependency, so we

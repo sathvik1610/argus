@@ -58,7 +58,9 @@ def make_index_repository_node(settings: Settings, embeddings: Any | None = None
 def make_planner_node(agent: StructuredAgent[ReviewStrategy]) -> Any:
     def plan(state: ReviewState) -> dict[str, Any]:
         strategy = run_planner(agent, state["diff"])
-        logger.info("review_planned", depth=strategy.estimated_review_depth, focus=strategy.focus_areas)
+        logger.info(
+            "review_planned", depth=strategy.estimated_review_depth, focus=strategy.focus_areas
+        )
         return {"strategy": strategy}
 
     return plan
@@ -91,7 +93,9 @@ def make_retrieve_more_node(settings: Settings) -> Any:
         for query in state["risk_assessment"].follow_up_queries:
             context = retriever.expand(context, query)
         rounds = state.get("context_expansion_rounds", 0) + 1
-        logger.info("context_expanded", round=rounds, queries=state["risk_assessment"].follow_up_queries)
+        logger.info(
+            "context_expanded", round=rounds, queries=state["risk_assessment"].follow_up_queries
+        )
         return {"retrieved_context": context, "context_expansion_rounds": rounds}
 
     return retrieve_more
@@ -99,7 +103,9 @@ def make_retrieve_more_node(settings: Settings) -> Any:
 
 def make_reviewer_node(spec: ReviewerSpec, agent: StructuredAgent[Any]) -> Any:
     def review(state: ReviewState) -> dict[str, Any]:
-        result = run_reviewer(agent, state["diff"], state["retrieved_context"], state.get("strategy"))
+        result = run_reviewer(
+            agent, state["diff"], state["retrieved_context"], state.get("strategy")
+        )
         return {spec.state_key: result}
 
     return review

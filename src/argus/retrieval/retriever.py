@@ -62,7 +62,9 @@ class ContextRetriever:
             ranked_files=ranked_files, touched_chunks=touched_chunks, related_chunks=related_chunks
         )
 
-    def expand(self, context: RetrievedContext, follow_up_query: str, *, k: int = 6) -> RetrievedContext:
+    def expand(
+        self, context: RetrievedContext, follow_up_query: str, *, k: int = 6
+    ) -> RetrievedContext:
         """Pull in additional chunks matching a follow-up query (need-more-context loop)."""
         existing_ids = {c.chunk_id for c in context.combined_chunks}
         hits = self._index.search(follow_up_query[:_MAX_QUERY_CHARS], k=k)
@@ -75,9 +77,7 @@ class ContextRetriever:
             source = self._file_contents.get(file_diff.path)
             if source is None or file_diff.is_binary:
                 continue
-            changed_lines = {
-                line for hunk in file_diff.hunks for line in hunk.added_line_numbers()
-            }
+            changed_lines = {line for hunk in file_diff.hunks for line in hunk.added_line_numbers()}
             if not changed_lines:
                 continue
             for chunk in chunk_file(file_diff.path, source, file_diff.language):
@@ -90,10 +90,7 @@ def _build_diff_query(diff: PullRequestDiff) -> str:
     parts: list[str] = []
     for file_diff in diff.files:
         added = [
-            line.content
-            for hunk in file_diff.hunks
-            for line in hunk.lines
-            if line.kind == "+"
+            line.content for hunk in file_diff.hunks for line in hunk.lines if line.kind == "+"
         ]
         if added:
             parts.append(f"{file_diff.path}:\n" + "\n".join(added[:40]))

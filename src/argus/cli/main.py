@@ -28,7 +28,9 @@ def review(
     repo_path: str = typer.Argument(..., help="Path to a local git repository"),
     base: str = typer.Option(..., "--base", "-b", help="Base ref/branch to diff against"),
     head: str = typer.Option("HEAD", "--head", help="Head ref/branch (defaults to HEAD)"),
-    output_format: str = typer.Option("console", "--format", "-f", help="console | markdown | json"),
+    output_format: str = typer.Option(
+        "console", "--format", "-f", help="console | markdown | json"
+    ),
     output: Path | None = typer.Option(None, "--output", "-o", help="Write report to a file"),
 ) -> None:
     """Run the full multi-agent review of a diff between two refs."""
@@ -81,7 +83,9 @@ def index(
 
 @app.command()
 def graph(
-    output: Path | None = typer.Option(None, "--output", "-o", help="Write Mermaid diagram to a file"),
+    output: Path | None = typer.Option(
+        None, "--output", "-o", help="Write Mermaid diagram to a file"
+    ),
 ) -> None:
     """Print the review workflow's graph structure as a Mermaid diagram."""
     compiled = build_graph_topology()
@@ -127,7 +131,13 @@ def doctor() -> None:
     checks: list[tuple[str, bool, str]] = []
 
     checks.append(("Python >= 3.12", sys.version_info >= (3, 12), sys.version.split()[0]))
-    checks.append(("git executable on PATH", shutil.which("git") is not None, shutil.which("git") or "not found"))
+    checks.append(
+        (
+            "git executable on PATH",
+            shutil.which("git") is not None,
+            shutil.which("git") or "not found",
+        )
+    )
 
     provider_key_present = {
         LLMProvider.GOOGLE: bool(settings.google_api_key),
@@ -139,7 +149,9 @@ def doctor() -> None:
         (
             f"API key set for provider ({settings.llm_provider.value})",
             provider_key_present,
-            "configured" if provider_key_present else "missing - set the provider's API key env var",
+            "configured"
+            if provider_key_present
+            else "missing - set the provider's API key env var",
         )
     )
 

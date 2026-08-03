@@ -83,7 +83,11 @@ def _python_imports(path: str, source: str, module_index: dict[str, str]) -> set
                     targets.add(module_index[alias.name])
         elif isinstance(node, ast.ImportFrom):
             if node.level and node.level > 0:
-                base_parts = list(current_parts[: len(current_parts) - (node.level - 1)] if node.level > 1 else current_parts)
+                base_parts = list(
+                    current_parts[: len(current_parts) - (node.level - 1)]
+                    if node.level > 1
+                    else current_parts
+                )
                 base = ".".join([*base_parts, node.module]) if node.module else ".".join(base_parts)
             else:
                 base = node.module or ""
@@ -111,7 +115,9 @@ def _js_imports(path: str, source: str, repo_files: set[str]) -> set[str]:
     return targets
 
 
-def _resolve_relative_js_import(current_dir: PurePosixPath, spec: str, repo_files: set[str]) -> str | None:
+def _resolve_relative_js_import(
+    current_dir: PurePosixPath, spec: str, repo_files: set[str]
+) -> str | None:
     candidate_base = str((current_dir / spec).as_posix()) if spec != "." else str(current_dir)
     candidate_base = _normalize_posix_path(candidate_base)
 

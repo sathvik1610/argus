@@ -88,7 +88,9 @@ def test_render_markdown_omits_empty_sections_gracefully() -> None:
     review = _sample_review()
     review = review.model_copy(
         update={
-            "security": SecurityReview(summary="Clean.", overall_severity=Severity.LOW, confidence=0.95),
+            "security": SecurityReview(
+                summary="Clean.", overall_severity=Severity.LOW, confidence=0.95
+            ),
             "suggested_improvements": [],
         }
     )

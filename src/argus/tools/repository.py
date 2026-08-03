@@ -16,8 +16,10 @@ from git.exc import GitCommandError
 from argus.models.diff import ChangeType, DiffHunk, DiffLine, FileDiff, PullRequestDiff
 from argus.tools.language import detect_language
 
-_HUNK_HEADER_RE = re.compile(r"^@@ -(?P<old_start>\d+)(?:,(?P<old_lines>\d+))? "
-                             r"\+(?P<new_start>\d+)(?:,(?P<new_lines>\d+))? @@(?P<rest>.*)$")
+_HUNK_HEADER_RE = re.compile(
+    r"^@@ -(?P<old_start>\d+)(?:,(?P<old_lines>\d+))? "
+    r"\+(?P<new_start>\d+)(?:,(?P<new_lines>\d+))? @@(?P<rest>.*)$"
+)
 
 
 class RepositoryError(RuntimeError):
@@ -44,7 +46,9 @@ class RepositoryLoader:
             raise RepositoryError(f"path does not exist: {self.repo_path}") from exc
 
     @classmethod
-    def clone(cls, url: str, destination: str | Path, *, depth: int | None = None) -> RepositoryLoader:
+    def clone(
+        cls, url: str, destination: str | Path, *, depth: int | None = None
+    ) -> RepositoryLoader:
         """Shallow-clone a remote repository into ``destination`` and load it."""
         destination = Path(destination)
         try:
@@ -90,9 +94,13 @@ class RepositoryLoader:
 
         git_diffs = base_commit.diff(head_commit, create_patch=True, R=False)
         files = [self._to_file_diff(d) for d in git_diffs]
-        return PullRequestDiff(base_ref=base_commit.hexsha, head_ref=head_commit.hexsha, files=files)
+        return PullRequestDiff(
+            base_ref=base_commit.hexsha, head_ref=head_commit.hexsha, files=files
+        )
 
-    def diff_from_patch(self, patch_text: str, base_ref: str = "working-tree", head_ref: str = "HEAD") -> PullRequestDiff:
+    def diff_from_patch(
+        self, patch_text: str, base_ref: str = "working-tree", head_ref: str = "HEAD"
+    ) -> PullRequestDiff:
         """Parse a standalone unified diff (e.g. from ``git diff`` or a PR .patch file)."""
         files = parse_unified_diff(patch_text)
         return PullRequestDiff(base_ref=base_ref, head_ref=head_ref, files=files)
@@ -187,7 +195,7 @@ def _strip_ab_prefix(raw: str) -> str | None:
         return None
     for prefix in ("a/", "b/"):
         if raw.startswith(prefix):
-            return raw[len(prefix):]
+            return raw[len(prefix) :]
     return raw
 
 

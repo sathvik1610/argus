@@ -122,7 +122,9 @@ class ReviewStrategy(BaseModel):
 
     summary: str
     estimated_review_depth: str = Field(description="quick | standard | deep")
-    focus_areas: list[str] = Field(default_factory=list, description="e.g. ['security', 'performance']")
+    focus_areas: list[str] = Field(
+        default_factory=list, description="e.g. ['security', 'performance']"
+    )
     rationale: str
 
 

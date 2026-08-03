@@ -47,7 +47,9 @@ class ReviewerSpec:
 REVIEWER_SPECS: tuple[ReviewerSpec, ...] = (
     ReviewerSpec("security", "security_review", SecurityReview, SECURITY_SYSTEM_PROMPT),
     ReviewerSpec("performance", "performance_review", PerformanceReview, PERFORMANCE_SYSTEM_PROMPT),
-    ReviewerSpec("architecture", "architecture_review", ArchitectureReview, ARCHITECTURE_SYSTEM_PROMPT),
+    ReviewerSpec(
+        "architecture", "architecture_review", ArchitectureReview, ARCHITECTURE_SYSTEM_PROMPT
+    ),
     ReviewerSpec("quality", "quality_review", CodeQualityReview, QUALITY_SYSTEM_PROMPT),
     ReviewerSpec("testing", "testing_review", TestingReview, TESTING_SYSTEM_PROMPT),
 )

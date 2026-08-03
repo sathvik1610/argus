@@ -56,8 +56,12 @@ def render_markdown(review: FinalReview) -> str:
     lines.append("## Performance\n")
     lines.append(review.performance.summary + "\n")
     for bottleneck in review.performance.bottlenecks:
-        complexity = f" ({bottleneck.complexity_estimate})" if bottleneck.complexity_estimate else ""
-        lines.append(f"- **{bottleneck.title}**{complexity} — `{bottleneck.file_path}`\n  - {bottleneck.description}")
+        complexity = (
+            f" ({bottleneck.complexity_estimate})" if bottleneck.complexity_estimate else ""
+        )
+        lines.append(
+            f"- **{bottleneck.title}**{complexity} — `{bottleneck.file_path}`\n  - {bottleneck.description}"
+        )
     lines.append("")
 
     lines.append("## Architecture\n")
@@ -66,7 +70,9 @@ def render_markdown(review: FinalReview) -> str:
     lines.append(f"- Cohesion: {review.architecture.cohesion_notes}")
     for concern in review.architecture.solid_violations:
         principle = f" ({concern.principle})" if concern.principle else ""
-        lines.append(f"- {_SEVERITY_EMOJI[concern.severity]} **{concern.title}**{principle} — `{concern.file_path}`")
+        lines.append(
+            f"- {_SEVERITY_EMOJI[concern.severity]} **{concern.title}**{principle} — `{concern.file_path}`"
+        )
     lines.append("")
 
     lines.append("## Code quality\n")
@@ -82,7 +88,11 @@ def render_markdown(review: FinalReview) -> str:
     lines.append("## Testing\n")
     lines.append(review.testing.summary + "\n")
     for missing in review.testing.missing_tests:
-        target = f"{missing.file_path}::{missing.function_name}" if missing.function_name else missing.file_path
+        target = (
+            f"{missing.file_path}::{missing.function_name}"
+            if missing.function_name
+            else missing.file_path
+        )
         lines.append(f"- `{target}` — {missing.reason} (risk: {missing.risk_if_untested})")
     lines.append("")
 
