@@ -1,0 +1,79 @@
+[project]
+name = "argus"
+version = "0.1.0"
+description = "Multi-agent AI platform that reviews pull requests like a senior engineer, built on LangGraph and LangChain."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Sathvik P" }]
+
+dependencies = [
+    "langgraph>=0.2.0",
+    "langchain>=0.3.0",
+    "langchain-core>=0.3.0",
+    "langchain-google-genai>=2.0.0",
+    "langchain-openai>=0.2.0",
+    "langchain-anthropic>=0.2.0",
+    "langchain-ollama>=0.2.0",
+    "langchain-chroma>=0.1.4",
+    "chromadb>=0.5.0",
+    "gitpython>=3.1.43",
+    "tree-sitter>=0.23.0",
+    "tree-sitter-language-pack>=0.2.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.5.0",
+    "typer>=0.12.5",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.31.0",
+    "rich>=13.9.0",
+    "networkx>=3.3",
+    "tenacity>=9.0.0",
+    "structlog>=24.4.0",
+]
+
+[project.scripts]
+argus = "argus.cli.main:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/argus"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.7.0",
+    "mypy>=1.11.0",
+    "pre-commit>=3.8.0",
+    "httpx>=0.27.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["argus"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+exclude = ["tests/"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["src/argus"]
