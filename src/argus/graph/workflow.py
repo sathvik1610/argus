@@ -19,6 +19,7 @@ forever.
 
 from __future__ import annotations
 
+from langchain_core.runnables import RunnableLambda
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
@@ -92,3 +93,26 @@ def build_review_graph(
     graph.add_edge("consensus", END)
 
     return graph.compile()
+
+
+class _TopologyOnlyChatModel:
+    """A placeholder model that can build a graph but errors if actually invoked.
+
+    Node closures only touch the chat model when a node *runs*; building and
+    inspecting a compiled graph's structure (``get_graph().draw_mermaid()``)
+    never executes a node. This lets ``argus graph`` render the workflow
+    diagram with no LLM provider or API key configured at all.
+    """
+
+    def with_structured_output(self, schema: type) -> object:
+        def _unsupported(_messages: object) -> object:
+            raise RuntimeError(
+                "This graph was built for topology visualization only and cannot be invoked."
+            )
+
+        return RunnableLambda(_unsupported)
+
+
+def build_graph_topology(settings: Settings | None = None) -> CompiledStateGraph:
+    """Build the review graph for visualization only — no provider required."""
+    return build_review_graph(settings or Settings(), chat_model=_TopologyOnlyChatModel())
