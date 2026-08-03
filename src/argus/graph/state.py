@@ -33,6 +33,7 @@ from argus.models.review import (
     SecurityReview,
     TestingReview,
 )
+from argus.retrieval.vector_store import RepositoryIndex
 
 
 class ReviewState(TypedDict, total=False):
@@ -45,6 +46,11 @@ class ReviewState(TypedDict, total=False):
     diff: PullRequestDiff
     file_contents: dict[str, str]
     import_graph: nx.DiGraph
+    vector_index: RepositoryIndex
+    """The live Chroma-backed index built by the indexer node. Kept in state
+    (rather than rebuilt per node) because opening/embedding a repository's
+    index is expensive; retrieval nodes reuse this handle instead of
+    reconnecting to Chroma on every call."""
 
     # Planner / Retrieval outputs
     strategy: ReviewStrategy
