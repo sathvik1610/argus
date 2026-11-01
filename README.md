@@ -30,46 +30,96 @@ Only three agents are used on purpose. See [INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.
 
 Each merged finding adds points by severity: critical 40, high 20, medium 8, low 2. The total is capped at 100. The risk level is the worst severity present. Because the score is computed after duplicates are merged, the same problem reported by two agents counts once.
 
-## Installation
+## Quick start
 
-Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
+You need Python 3.12+ and [uv](https://docs.astral.sh/uv/) (`python -m pip install uv` if you do not have it; if the `uv` command is then not found, write `python -m uv` instead of `uv` below).
+
+**1. Install**
 
 ```bash
 git clone https://github.com/sathvik1610/argus.git
 cd argus
 uv sync --dev
-cp .env.example .env     # then put your Gemini key in .env
 ```
 
-Get a Gemini API key at https://aistudio.google.com/apikey and set `GOOGLE_API_KEY` in `.env`. Model names are configurable (`ARGUS_LLM_MODEL`, `ARGUS_EMBEDDING_MODEL`); the defaults are `gemini-2.5-flash` and `models/gemini-embedding-001`.
+**2. Check that everything works (no API key needed)**
 
-## Usage
+```bash
+uv run pytest
+```
 
-### Command line
+Expected: `76 passed, 2 skipped`. The 2 skipped tests call the real Gemini API and only run once you add a key.
+
+**3. Add your Gemini key (needed to review anything)**
+
+Create `.env` from the template, then edit it and replace `your-gemini-api-key-here` with your key from https://aistudio.google.com/apikey.
+
+```bash
+cp .env.example .env
+```
+
+(`cp` works in Git Bash and PowerShell. In cmd.exe use `copy .env.example .env`.)
+
+Optional: `ARGUS_LLM_MODEL` and `ARGUS_EMBEDDING_MODEL` in `.env` change the models. Defaults: `gemini-2.5-flash` and `models/gemini-embedding-001`.
+
+**4. Review a repository**
 
 ```bash
 uv run python -m argus /path/to/repo --base main --head my-branch
-uv run python -m argus /path/to/repo --base main --head my-branch --no-rag   # diff only
-uv run python -m argus /path/to/repo --base HEAD~1 --json                    # full JSON report
 ```
 
-### API
+`--base` is the "before" branch or commit, `--head` the "after" (default `HEAD`). Windows paths work as written, for example `D:\GitHub\myproject`.
 
 ```bash
-# Only repositories inside these folders can be reviewed (';' on Windows, ':' elsewhere).
+uv run python -m argus /path/to/repo --base main --head my-branch --no-rag
+uv run python -m argus /path/to/repo --base HEAD~1 --json
+```
+
+`--no-rag` reviews the diff only (no retrieval, no embedding calls). `--json` prints the full report as JSON.
+
+## Running the API
+
+The API only reads repositories inside folders you list in `ARGUS_ALLOWED_REPO_DIRS`. If it is empty, every request is refused with 403.
+
+Set it for the current terminal:
+
+```bash
+# Git Bash / Linux / macOS
 export ARGUS_ALLOWED_REPO_DIRS=/home/me/projects
+```
+
+```powershell
+# Windows PowerShell
+$env:ARGUS_ALLOWED_REPO_DIRS = "D:\GitHub"
+```
+
+Or put `ARGUS_ALLOWED_REPO_DIRS=D:\GitHub` in your `.env` file. Several folders are separated by `;` on Windows and `:` elsewhere.
+
+Start the server, then open http://localhost:8000/docs for an interactive page where you can try the endpoints:
+
+```bash
 uv run uvicorn argus.api:app
 ```
 
 ```bash
-curl -X POST http://localhost:8000/review \
-  -H "Content-Type: application/json" \
-  -d '{"repo_path": "/home/me/projects/app", "base": "main", "head": "feature", "rag": true}'
-
 curl http://localhost:8000/health
+curl -X POST http://localhost:8000/review -H "Content-Type: application/json" -d '{"repo_path": "/home/me/projects/app", "base": "main", "head": "feature", "rag": true}'
 ```
 
-`POST /review` returns the summary, findings, severity counts, risk score, the files with findings, and the retrieved context (file and line range of each snippet). If `ARGUS_ALLOWED_REPO_DIRS` is empty, every path is refused. Argus never executes code from the reviewed repository; it only reads files through git.
+`POST /review` returns the summary, findings, severity counts, risk score, the files with findings, and the retrieved context (file and line range of each snippet). Argus never executes code from the reviewed repository; it only reads files through git.
+
+## Troubleshooting
+
+| Message | Meaning and fix |
+|---|---|
+| `GOOGLE_API_KEY is not set` | `.env` is missing, is not in the folder you run from, or still has the placeholder. Fix step 3. |
+| `not a git repository` | The path is not a git repo. Point at the folder that contains `.git`. |
+| `unknown ref: ...` | A branch or commit name does not exist in that repo. Check with `git branch -a`. |
+| API returns 403 | The repo is outside `ARGUS_ALLOWED_REPO_DIRS`, or that variable is empty. |
+| API returns 503 | The API key is not configured (same as the first row). |
+| 404 or "model not found" from Google | The default model name is not available to your key. Set `ARGUS_LLM_MODEL` or `ARGUS_EMBEDDING_MODEL` in `.env` to a model your key supports. |
+| 429 or "quota" errors | Free-tier rate limit. Wait a minute, or run the evaluation with `--pause 10`. |
+| `uv: command not found` | Run `python -m pip install uv`, then use `python -m uv ...`. |
 
 ## Evaluation: does RAG help?
 
