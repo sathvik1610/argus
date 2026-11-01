@@ -12,7 +12,7 @@ repos:
       - id: mypy
         additional_dependencies: [pydantic>=2.9.0]
         args: [--config-file=pyproject.toml]
-        exclude: ^tests/
+        exclude: ^(tests|temp)/
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
