@@ -31,7 +31,9 @@ ADDED_VALIDATION = Scenario(
     id="clean_added_validation",
     kind="clean",
     description="Adds proper input validation to create_user.",
-    base_files={"signup.py": "def create_user(name, age):\n    return {'name': name, 'age': age}\n"},
+    base_files={
+        "signup.py": "def create_user(name, age):\n    return {'name': name, 'age': age}\n"
+    },
     pr_files={
         "signup.py": (
             "def create_user(name, age):\n"

@@ -111,7 +111,9 @@ def test_wrong_file_never_matches() -> None:
 
 
 def test_score_separates_found_missed_and_false_positives() -> None:
-    caught = score_findings(SCENARIO, [finding(text="injection!"), finding(text="style nit", line=99)])
+    caught = score_findings(
+        SCENARIO, [finding(text="injection!"), finding(text="style nit", line=99)]
+    )
     assert caught.found == ["WHERE name"]
     assert caught.missed == []
     assert len(caught.false_positives) == 1

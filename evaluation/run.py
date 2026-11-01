@@ -125,8 +125,10 @@ def run_all(
             record = run_one(scenario, repo, rag, settings, model, embeddings)
             records.append(record)
             if record["ok"]:
-                print(f"found {len(record['bugs_found'])}/{record['bugs_expected']}, "
-                      f"{record['false_positives']} false positive(s), {record['latency_s']}s")
+                print(
+                    f"found {len(record['bugs_found'])}/{record['bugs_expected']}, "
+                    f"{record['false_positives']} false positive(s), {record['latency_s']}s"
+                )
             else:
                 print(f"ERROR {record['error']}")
             if pause:
