@@ -2,20 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
-from argus.agents import run_reviewer
+from langchain_core.embeddings import Embeddings
+
 from argus.config import Settings
 from argus.git_diff import Repo
+from argus.graph import build_graph
 from argus.llm import get_chat_model
-from argus.models import Category, Finding
-
-
-@dataclass
-class ReviewResult:
-    findings: list[Finding]
-    tokens: int
+from argus.models import Report
 
 
 def review_repo(
@@ -23,20 +18,20 @@ def review_repo(
     base: str,
     head: str = "HEAD",
     *,
+    rag: bool = True,
     settings: Settings | None = None,
     model: Any = None,
-) -> ReviewResult:
+    embeddings: Embeddings | None = None,
+) -> Report:
+    """Review the diff between `base` and `head`. `model`/`embeddings` can be passed
+    in (tests do this); otherwise they are built from the settings."""
     settings = settings or Settings()
-    diff = Repo(repo_path).diff(base, head)
-    if not diff.files:
-        return ReviewResult([], 0)
-    model = model or get_chat_model(settings)
-    diff_text = diff.render(settings.max_diff_chars)
+    # Check the repository and refs first, so a typo is reported before any key problem.
+    repo = Repo(repo_path)
+    repo.resolve(base)
+    repo.resolve(head)
 
-    findings: list[Finding] = []
-    tokens = 0
-    for category in Category:
-        result = run_reviewer(model, category, diff_text, None)
-        findings.extend(result.findings)
-        tokens += result.tokens
-    return ReviewResult(findings, tokens)
+    graph = build_graph(model or get_chat_model(settings), settings, embeddings)
+    state = graph.invoke({"repo_path": repo_path, "base": base, "head": head, "rag": rag})
+    report: Report = state["report"]
+    return report

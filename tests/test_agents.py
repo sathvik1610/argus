@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from argus.agents import build_user_prompt, run_reviewer, sanitize
-from argus.config import Settings
 from argus.models import Category, Finding, Severity, Snippet
-from argus.service import review_repo
 from tests.fakes import FakeChatModel, by_category
 
 
@@ -57,19 +53,3 @@ def test_system_prompt_marks_repo_text_as_untrusted() -> None:
     run_reviewer(model, Category.CORRECTNESS, "diff", None)
     system, _ = model.calls[0]
     assert "untrusted repository data" in system
-
-
-def test_review_repo_runs_all_three_reviewers(sample_repo: Path, settings: Settings) -> None:
-    model = FakeChatModel(
-        by_category(
-            {
-                Category.SECURITY: [finding(Category.SECURITY)],
-                Category.CORRECTNESS: [finding(Category.CORRECTNESS, line=5)],
-            }
-        ),
-        tokens=5,
-    )
-    result = review_repo(str(sample_repo), "HEAD~1", "HEAD", settings=settings, model=model)
-    assert {f.category for f in result.findings} == {Category.SECURITY, Category.CORRECTNESS}
-    assert result.tokens == 15
-    assert len(model.calls) == 3
