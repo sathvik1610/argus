@@ -23,10 +23,11 @@ def test_numbered_patch_shows_new_file_line_numbers(sample_repo: Path) -> None:
 
 def test_parse_patch_counts_context_lines() -> None:
     patch = "@@ -1,3 +1,3 @@\n a\n-b\n+B\n c\n"
-    numbered, added = parse_patch(patch)
+    numbered, added, new_code = parse_patch(patch)
     assert added == [2]
     assert "    1  a" in numbered
     assert "    3  c" in numbered
+    assert new_code == "a\nB\nc"
 
 
 def test_render_truncates_long_diffs(sample_repo: Path) -> None:

@@ -20,6 +20,7 @@ class ChangedFile:
     path: str
     numbered_patch: str  # the patch with new-file line numbers added, for the LLM
     added_lines: list[int]  # new-file line numbers of every added line
+    new_code: str  # added + unchanged lines (no numbers), used to build retrieval queries
 
 
 @dataclass
@@ -41,10 +42,11 @@ class Diff:
         return text
 
 
-def parse_patch(patch: str) -> tuple[str, list[int]]:
-    """Add line numbers to a patch. Returns (numbered_patch, added_line_numbers)."""
+def parse_patch(patch: str) -> tuple[str, list[int], str]:
+    """Add line numbers to a patch. Returns (numbered_patch, added_line_numbers, new_code)."""
     out: list[str] = []
     added: list[int] = []
+    new_code: list[str] = []
     new_line = 0
     for line in patch.splitlines():
         match = HUNK_RE.match(line)
@@ -54,6 +56,7 @@ def parse_patch(patch: str) -> tuple[str, list[int]]:
         elif line.startswith("+"):
             out.append(f"{new_line:>5} {line}")
             added.append(new_line)
+            new_code.append(line[1:])
             new_line += 1
         elif line.startswith("-"):
             out.append(f"      {line}")
@@ -61,8 +64,9 @@ def parse_patch(patch: str) -> tuple[str, list[int]]:
             continue  # "\ No newline at end of file"
         else:
             out.append(f"{new_line:>5} {line}")
+            new_code.append(line[1:])
             new_line += 1
-    return "\n".join(out), added
+    return "\n".join(out), added, "\n".join(new_code)
 
 
 class Repo:
@@ -89,8 +93,8 @@ class Repo:
             patch = raw.decode("utf-8", errors="replace") if isinstance(raw, bytes) else (raw or "")
             if "@@" not in patch:
                 continue  # binary file or a pure rename: nothing to review
-            numbered, added = parse_patch(patch)
-            files.append(ChangedFile(item.b_path or item.a_path or "?", numbered, added))
+            numbered, added, new_code = parse_patch(patch)
+            files.append(ChangedFile(item.b_path or item.a_path or "?", numbered, added, new_code))
         return Diff(base_commit.hexsha, head_commit.hexsha, files)
 
     def list_files(self, ref: str) -> list[str]:
