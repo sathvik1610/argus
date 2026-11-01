@@ -7,6 +7,10 @@ from difflib import SequenceMatcher
 from argus.models import Finding, Report, Severity, Snippet
 
 SEVERITY_RANK = {Severity.CRITICAL: 3, Severity.HIGH: 2, Severity.MEDIUM: 1, Severity.LOW: 0}
+# Risk score: each merged finding adds points by severity; the total is capped at 100.
+# The weights are a judgment call: one critical (40) outweighs four mediums (32).
+SEVERITY_WEIGHTS = {Severity.CRITICAL: 40, Severity.HIGH: 20, Severity.MEDIUM: 8, Severity.LOW: 2}
+MAX_RISK_SCORE = 100
 SIMILARITY_THRESHOLD = 0.6  # description similarity (0 to 1) above which two texts match
 LINE_TOLERANCE = 2  # findings this many lines apart count as the same spot
 
@@ -46,6 +50,22 @@ def merge_findings(findings: list[Finding]) -> list[Finding]:
     return kept
 
 
+def risk_score(merged: list[Finding]) -> int:
+    """Sum of severity weights, capped at 100.
+
+    Call this with the MERGED findings: duplicates were already removed by
+    merge_findings(), so the same problem reported by two agents counts once.
+    """
+    return min(MAX_RISK_SCORE, sum(SEVERITY_WEIGHTS[f.severity] for f in merged))
+
+
+def risk_level(merged: list[Finding]) -> str:
+    """The worst severity present (the score alone can hide one critical finding)."""
+    if not merged:
+        return "none"
+    return max((f.severity for f in merged), key=lambda s: SEVERITY_RANK[s]).value
+
+
 def build_report(
     findings: list[Finding], snippets: list[Snippet] | None, tokens: int = 0
 ) -> Report:
@@ -57,7 +77,10 @@ def build_report(
 
     if merged:
         by_severity = ", ".join(f"{n} {name}" for name, n in counts.items() if n)
-        summary = f"{len(merged)} finding(s) ({by_severity}) in {len(files)} file(s)."
+        summary = (
+            f"{len(merged)} finding(s) ({by_severity}) in {len(files)} file(s). "
+            f"Risk: {risk_level(merged)} ({risk_score(merged)}/100)."
+        )
     else:
         summary = "No issues found by the security, correctness and performance reviewers."
     return Report(
@@ -67,5 +90,7 @@ def build_report(
         files_with_findings=files,
         retrieved_context=snippets or [],
         rag_enabled=snippets is not None,
+        risk_score=risk_score(merged),
+        risk_level=risk_level(merged),
         tokens_used=tokens,
     )

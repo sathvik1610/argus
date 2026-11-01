@@ -30,6 +30,7 @@ def main() -> int:
         return 0
 
     print(report.summary)
+    print(f"risk score: {report.risk_score}/100 ({report.risk_level})")
     for f in report.findings:
         where = f"{f.file}:{f.line}" if f.line else f.file
         print(f"\n[{f.severity.value}] ({f.category.value}) {where}")

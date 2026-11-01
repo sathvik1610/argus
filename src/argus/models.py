@@ -56,4 +56,6 @@ class Report(BaseModel):
     files_with_findings: list[str]
     retrieved_context: list[Snippet]
     rag_enabled: bool
+    risk_score: int = 0  # 0-100, see merge.risk_score()
+    risk_level: str = "none"  # none, low, medium, high or critical
     tokens_used: int = 0

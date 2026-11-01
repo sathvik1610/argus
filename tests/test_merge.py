@@ -110,3 +110,51 @@ def test_report_carries_retrieved_context() -> None:
     snippet = Snippet(file="w.py", start_line=1, end_line=3, name="withdraw", code="x")
     report = build_report([], snippets=[snippet])
     assert report.retrieved_context == [snippet]
+
+
+def test_risk_score_uses_documented_weights() -> None:
+    from argus.merge import risk_score
+
+    findings = [
+        f(line=1, severity=Severity.CRITICAL, description="a"),
+        f(line=50, severity=Severity.HIGH, description="b"),
+        f(line=90, severity=Severity.MEDIUM, description="c"),
+        f(line=130, severity=Severity.LOW, description="d"),
+    ]
+    assert risk_score(findings) == 40 + 20 + 8 + 2
+
+
+def test_risk_score_is_capped_at_100() -> None:
+    from argus.merge import risk_score
+
+    findings = [f(line=i * 10, severity=Severity.CRITICAL, description=f"d{i}") for i in range(5)]
+    assert risk_score(findings) == 100
+
+
+def test_duplicates_do_not_inflate_the_risk_score() -> None:
+    from argus.merge import risk_score
+
+    # The same problem reported by two agents (same file and line, similar text).
+    security = f(
+        category=Category.SECURITY, severity=Severity.HIGH, description="sql injection here"
+    )
+    correctness = f(
+        category=Category.CORRECTNESS, severity=Severity.HIGH, description="sql injection here"
+    )
+    one = build_report([security], None)
+    two = build_report([security, correctness], None)
+    assert one.risk_score == two.risk_score == 20
+    assert risk_score([security, correctness]) == 40  # raw, un-merged list WOULD double count
+
+
+def test_risk_level_is_the_worst_severity() -> None:
+    from argus.merge import risk_level
+
+    assert risk_level([]) == "none"
+    mixed = [
+        f(line=1, severity=Severity.LOW, description="a"),
+        f(line=99, severity=Severity.CRITICAL, description="b"),
+    ]
+    assert risk_level(mixed) == "critical"
+    many_lows = [f(line=i * 20, severity=Severity.LOW, description=f"x{i}") for i in range(10)]
+    assert risk_level(many_lows) == "low"  # 20 points, but still only low severity
